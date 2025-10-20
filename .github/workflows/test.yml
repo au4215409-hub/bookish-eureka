@@ -65,352 +65,267 @@ jobs:
         pip install pyautogui keyboard requests opencv-python pillow
         Write-Host "✅ Python dependencies installed"
 
-    - name: Create Python Script
+    - name: Create Python Script using echo
       run: |
-        Write-Host "=== CREATING PYTHON SCRIPT ==="
+        Write-Host "=== CREATING PYTHON SCRIPT USING ECHO ==="
         $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        cd $whatsappDir
         
-        # Create the Python script using a here-string
-        @"
-import pyautogui
-import time
-import subprocess
-import requests
-import os
-import keyboard
-
-# Enable failsafe - move mouse to top-left corner to abort
-pyautogui.FAILSAFE = True
-
-# Download and read the numbers file
-def download_numbers_file():
-    url = "https://raw.githubusercontent.com/binahmad362/bookish-octo-couscous/main/rough.txt"
-    try:
-        print("Downloading numbers file...")
-        response = requests.get(url)
-        response.raise_for_status()
+        # Create the Python script using echo commands
+        echo "import pyautogui" > whatsapp_automation.py
+        echo "import time" >> whatsapp_automation.py
+        echo "import subprocess" >> whatsapp_automation.py
+        echo "import requests" >> whatsapp_automation.py
+        echo "import os" >> whatsapp_automation.py
+        echo "import keyboard" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "# Enable failsafe - move mouse to top-left corner to abort" >> whatsapp_automation.py
+        echo "pyautogui.FAILSAFE = True" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "# Download and read the numbers file" >> whatsapp_automation.py
+        echo "def download_numbers_file():" >> whatsapp_automation.py
+        echo "    url = 'https://raw.githubusercontent.com/binahmad362/bookish-octo-couscous/main/rough.txt'" >> whatsapp_automation.py
+        echo "    try:" >> whatsapp_automation.py
+        echo "        print('Downloading numbers file...')" >> whatsapp_automation.py
+        echo "        response = requests.get(url)" >> whatsapp_automation.py
+        echo "        response.raise_for_status()" >> whatsapp_automation.py
+        echo "        with open('rough.txt', 'w', encoding='utf-8') as f:" >> whatsapp_automation.py
+        echo "            f.write(response.text)" >> whatsapp_automation.py
+        echo "        print('Numbers file downloaded successfully!')" >> whatsapp_automation.py
+        echo "        return True" >> whatsapp_automation.py
+        echo "    except Exception as e:" >> whatsapp_automation.py
+        echo "        print(f'Error downloading numbers file: {e}')" >> whatsapp_automation.py
+        echo "        return False" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def read_numbers_file():" >> whatsapp_automation.py
+        echo "    try:" >> whatsapp_automation.py
+        echo "        with open('rough.txt', 'r', encoding='utf-8') as f:" >> whatsapp_automation.py
+        echo "            lines = [line.strip() for line in f.readlines() if line.strip()]" >> whatsapp_automation.py
+        echo "        if len(lines) < 3:" >> whatsapp_automation.py
+        echo "            print('Error: File doesn't contain enough data')" >> whatsapp_automation.py
+        echo "            return None, None, []" >> whatsapp_automation.py
+        echo "        country_name = lines[0]" >> whatsapp_automation.py
+        echo "        country_code = lines[1]" >> whatsapp_automation.py
+        echo "        numbers = lines[2:]" >> whatsapp_automation.py
+        echo "        print(f'Country: {country_name}')" >> whatsapp_automation.py
+        echo "        print(f'Country code: {country_code}')" >> whatsapp_automation.py
+        echo "        print(f'Numbers to check: {len(numbers)}')" >> whatsapp_automation.py
+        echo "        return country_name, country_code, numbers" >> whatsapp_automation.py
+        echo "    except Exception as e:" >> whatsapp_automation.py
+        echo "        print(f'Error reading numbers file: {e}')" >> whatsapp_automation.py
+        echo "        return None, None, []" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def save_not_usable_number(number):" >> whatsapp_automation.py
+        echo "    try:" >> whatsapp_automation.py
+        echo "        with open('not_usable.txt', 'a', encoding='utf-8') as f:" >> whatsapp_automation.py
+        echo "            f.write(number + '\n')" >> whatsapp_automation.py
+        echo "        print(f'Saved {number} to not_usable.txt')" >> whatsapp_automation.py
+        echo "    except Exception as e:" >> whatsapp_automation.py
+        echo "        print(f'Error saving to not_usable.txt: {e}')" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def save_request_review_number(number):" >> whatsapp_automation.py
+        echo "    try:" >> whatsapp_automation.py
+        echo "        with open('request_review.txt', 'a', encoding='utf-8') as f:" >> whatsapp_automation.py
+        echo "            f.write(number + '\n')" >> whatsapp_automation.py
+        echo "        print(f'Saved {number} to request_review.txt')" >> whatsapp_automation.py
+        echo "    except Exception as e:" >> whatsapp_automation.py
+        echo "        print(f'Error saving to request_review.txt: {e}')" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def type_with_delay(text, delay=0.1):" >> whatsapp_automation.py
+        echo "    pyautogui.write(text, interval=delay)" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def wait_and_click(image, timeout=10, confidence=0.8):" >> whatsapp_automation.py
+        echo "    print(f'Searching for {image} on screen...')" >> whatsapp_automation.py
+        echo "    start_time = time.time()" >> whatsapp_automation.py
+        echo "    while time.time() - start_time < timeout:" >> whatsapp_automation.py
+        echo "        try:" >> whatsapp_automation.py
+        echo "            location = pyautogui.locateOnScreen(image, confidence=confidence)" >> whatsapp_automation.py
+        echo "            if location:" >> whatsapp_automation.py
+        echo "                center = pyautogui.center(location)" >> whatsapp_automation.py
+        echo "                print(f'Found {image} at: {location}')" >> whatsapp_automation.py
+        echo "                print(f'Clicking at center: X: {center.x}, Y: {center.y}')" >> whatsapp_automation.py
+        echo "                pyautogui.click(center)" >> whatsapp_automation.py
+        echo "                print(f'Successfully clicked {image}!')" >> whatsapp_automation.py
+        echo "                return True" >> whatsapp_automation.py
+        echo "        except pyautogui.ImageNotFoundException:" >> whatsapp_automation.py
+        echo "            pass" >> whatsapp_automation.py
+        echo "        time.sleep(0.1)" >> whatsapp_automation.py
+        echo "    print(f'❌ {image} not found on screen within {timeout} seconds')" >> whatsapp_automation.py
+        echo "    return False" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def wait_for_image(image, timeout=10, confidence=0.8):" >> whatsapp_automation.py
+        echo "    print(f'Searching for {image} on screen...')" >> whatsapp_automation.py
+        echo "    start_time = time.time()" >> whatsapp_automation.py
+        echo "    while time.time() - start_time < timeout:" >> whatsapp_automation.py
+        echo "        try:" >> whatsapp_automation.py
+        echo "            location = pyautogui.locateOnScreen(image, confidence=confidence)" >> whatsapp_automation.py
+        echo "            if location:" >> whatsapp_automation.py
+        echo "                print(f'Found {image} at: {location}')" >> whatsapp_automation.py
+        echo "                return True" >> whatsapp_automation.py
+        echo "        except pyautogui.ImageNotFoundException:" >> whatsapp_automation.py
+        echo "            pass" >> whatsapp_automation.py
+        echo "        time.sleep(0.1)" >> whatsapp_automation.py
+        echo "    print(f'❌ {image} not found on screen within {timeout} seconds')" >> whatsapp_automation.py
+        echo "    return False" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "    if wait_for_image('too_long_phone_number.png', timeout=2):" >> whatsapp_automation.py
+        echo "        print('⚠️ Too long phone number detected! Handling the error...')" >> whatsapp_automation.py
+        echo "        if wait_and_click('ok.png', timeout=5):" >> whatsapp_automation.py
+        echo "            print('Clicked ok.png to dismiss the error')" >> whatsapp_automation.py
+        echo "            time.sleep(1)" >> whatsapp_automation.py
+        echo "            print('Clearing phone number field with 50 backspaces...')" >> whatsapp_automation.py
+        echo "            for _ in range(50):" >> whatsapp_automation.py
+        echo "                keyboard.press_and_release('backspace')" >> whatsapp_automation.py
+        echo "            time.sleep(1)" >> whatsapp_automation.py
+        echo "            print('Phone number field cleared successfully')" >> whatsapp_automation.py
+        echo "            return True" >> whatsapp_automation.py
+        echo "        else:" >> whatsapp_automation.py
+        echo "            print('Failed to find ok.png')" >> whatsapp_automation.py
+        echo "            return False" >> whatsapp_automation.py
+        echo "    return False" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def process_numbers(country_name, country_code, numbers):" >> whatsapp_automation.py
+        echo "    if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "        print('Recovered from too_long_phone_number error, continuing...')" >> whatsapp_automation.py
+        echo "    if not wait_and_click('select_country.png', timeout=10):" >> whatsapp_automation.py
+        echo "        print('Failed to find select_country.png. Aborting.')" >> whatsapp_automation.py
+        echo "        return" >> whatsapp_automation.py
+        echo "    time.sleep(2)" >> whatsapp_automation.py
+        echo "    if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "        print('Recovered from too_long_phone_number error, continuing...')" >> whatsapp_automation.py
+        echo "    if not wait_and_click('search_the_country.png', timeout=10):" >> whatsapp_automation.py
+        echo "        print('Failed to find search_the_country.png. Aborting.')" >> whatsapp_automation.py
+        echo "        return" >> whatsapp_automation.py
+        echo "    time.sleep(1)" >> whatsapp_automation.py
+        echo "    if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "        print('Recovered from too_long_phone_number error, continuing...')" >> whatsapp_automation.py
+        echo "    print(f'Typing country: {country_name}')" >> whatsapp_automation.py
+        echo "    type_with_delay(country_name)" >> whatsapp_automation.py
+        echo "    time.sleep(1)" >> whatsapp_automation.py
+        echo "    if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "        print('Recovered from too_long_phone_number error, continuing...')" >> whatsapp_automation.py
+        echo "    if not wait_and_click('confirm_the_country.png', timeout=10):" >> whatsapp_automation.py
+        echo "        print('Failed to find confirm_the_country.png. Aborting.')" >> whatsapp_automation.py
+        echo "        return" >> whatsapp_automation.py
+        echo "    time.sleep(2)" >> whatsapp_automation.py
+        echo "    if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "        print('Recovered from too_long_phone_number error, continuing...')" >> whatsapp_automation.py
+        echo "    for i, full_number in enumerate(numbers):" >> whatsapp_automation.py
+        echo "        print(f'--- Processing number {i+1}/{len(numbers)}: {full_number} ---')" >> whatsapp_automation.py
+        echo "        if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "            print('Recovered from too_long_phone_number error, continuing with current number...')" >> whatsapp_automation.py
+        echo "        if full_number.startswith(country_code):" >> whatsapp_automation.py
+        echo "            number_without_code = full_number[len(country_code):]" >> whatsapp_automation.py
+        echo "        else:" >> whatsapp_automation.py
+        echo "            number_without_code = full_number" >> whatsapp_automation.py
+        echo "            print(f'Warning: Number doesn't start with country code {country_code}')" >> whatsapp_automation.py
+        echo "        print(f'Typing number without country code: {number_without_code}')" >> whatsapp_automation.py
+        echo "        type_with_delay(number_without_code)" >> whatsapp_automation.py
+        echo "        time.sleep(0.5)" >> whatsapp_automation.py
+        echo "        if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "            print('Recovered from too_long_phone_number error, re-typing current number...')" >> whatsapp_automation.py
+        echo "            type_with_delay(number_without_code)" >> whatsapp_automation.py
+        echo "            time.sleep(0.5)" >> whatsapp_automation.py
+        echo "        if not wait_and_click('next.png', timeout=10):" >> whatsapp_automation.py
+        echo "            print('Failed to find next.png. Moving to next number.')" >> whatsapp_automation.py
+        echo "            continue" >> whatsapp_automation.py
+        echo "        if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "            print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "            continue" >> whatsapp_automation.py
+        echo "        print('Waiting for result (edit.png or not_usable.png)...')" >> whatsapp_automation.py
+        echo "        result_found = False" >> whatsapp_automation.py
+        echo "        start_time = time.time()" >> whatsapp_automation.py
+        echo "        while time.time() - start_time < 8 and not result_found:" >> whatsapp_automation.py
+        echo "            if wait_for_image('edit.png', timeout=0.5):" >> whatsapp_automation.py
+        echo "                print('Edit button found - number might be valid but needs modification')" >> whatsapp_automation.py
+        echo "                wait_and_click('edit.png', timeout=2)" >> whatsapp_automation.py
+        echo "                for _ in range(20):" >> whatsapp_automation.py
+        echo "                    keyboard.press_and_release('backspace')" >> whatsapp_automation.py
+        echo "                time.sleep(1)" >> whatsapp_automation.py
+        echo "                result_found = True" >> whatsapp_automation.py
+        echo "                break" >> whatsapp_automation.py
+        echo "            if wait_for_image('not_usable.png', timeout=0.5):" >> whatsapp_automation.py
+        echo "                print('Number is not usable - saving to file')" >> whatsapp_automation.py
+        echo "                save_not_usable_number(full_number)" >> whatsapp_automation.py
+        echo "                wait_and_click('not_usable.png', timeout=2)" >> whatsapp_automation.py
+        echo "                result_found = True" >> whatsapp_automation.py
+        echo "                break" >> whatsapp_automation.py
+        echo "            time.sleep(0.1)" >> whatsapp_automation.py
+        echo "        if not result_found:" >> whatsapp_automation.py
+        echo "            print('Neither edit.png nor not_usable.png found - unexpected state')" >> whatsapp_automation.py
+        echo "            pyautogui.press('esc')" >> whatsapp_automation.py
+        echo "            time.sleep(2)" >> whatsapp_automation.py
+        echo "            if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                continue" >> whatsapp_automation.py
+        echo "            if wait_and_click('register_new_number.png', timeout=5):" >> whatsapp_automation.py
+        echo "                print('Back at registration screen, continuing...')" >> whatsapp_automation.py
+        echo "            else:" >> whatsapp_automation.py
+        echo "                print('Could not recover to registration screen')" >> whatsapp_automation.py
+        echo "                continue" >> whatsapp_automation.py
+        echo "            continue" >> whatsapp_automation.py
+        echo "        if wait_for_image('not_usable.png', timeout=1):" >> whatsapp_automation.py
+        echo "            if wait_and_click('register_new_number.png', timeout=8):" >> whatsapp_automation.py
+        echo "                if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                    print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                    continue" >> whatsapp_automation.py
+        echo "                wait_and_click('agree_2.png', timeout=5)" >> whatsapp_automation.py
+        echo "                if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                    print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                    continue" >> whatsapp_automation.py
+        echo "                time.sleep(2)" >> whatsapp_automation.py
+        echo "            else:" >> whatsapp_automation.py
+        echo "                print('Failed to find register_new_number.png, checking for request_review.png...')" >> whatsapp_automation.py
+        echo "                if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                    print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                    continue" >> whatsapp_automation.py
+        echo "                if wait_for_image('request_review.png', timeout=5):" >> whatsapp_automation.py
+        echo "                    print('Found request_review.png - saving number to request_review.txt')" >> whatsapp_automation.py
+        echo "                    save_request_review_number(full_number)" >> whatsapp_automation.py
+        echo "                    if wait_and_click('show_option.png', timeout=8):" >> whatsapp_automation.py
+        echo "                        if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                            print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                            continue" >> whatsapp_automation.py
+        echo "                        time.sleep(1)" >> whatsapp_automation.py
+        echo "                        if wait_and_click('register_new_number_after_it_is_review.png', timeout=8):" >> whatsapp_automation.py
+        echo "                            if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                                print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                                continue" >> whatsapp_automation.py
+        echo "                            time.sleep(1)" >> whatsapp_automation.py
+        echo "                            if wait_and_click('agree_2.png', timeout=8):" >> whatsapp_automation.py
+        echo "                                if check_too_long_phone_number():" >> whatsapp_automation.py
+        echo "                                    print('Recovered from too_long_phone_number error, continuing to next number...')" >> whatsapp_automation.py
+        echo "                                    continue" >> whatsapp_automation.py
+        echo "                                print('Successfully navigated through request review flow')" >> whatsapp_automation.py
+        echo "                                time.sleep(2)" >> whatsapp_automation.py
+        echo "                            else:" >> whatsapp_automation.py
+        echo "                                print('Failed to find agree_2.png after request review')" >> whatsapp_automation.py
+        echo "                        else:" >> whatsapp_automation.py
+        echo "                            print('Failed to find register_new_number_after_it_is_review.png')" >> whatsapp_automation.py
+        echo "                    else:" >> whatsapp_automation.py
+        echo "                        print('Failed to find show_option.png')" >> whatsapp_automation.py
+        echo "                else:" >> whatsapp_automation.py
+        echo "                    print('Neither register_new_number.png nor request_review.png found')" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "def main():" >> whatsapp_automation.py
+        echo "    print('Setting up number verification...')" >> whatsapp_automation.py
+        echo "    if not download_numbers_file():" >> whatsapp_automation.py
+        echo "        return" >> whatsapp_automation.py
+        echo "    country_name, country_code, numbers = read_numbers_file()" >> whatsapp_automation.py
+        echo "    if not country_name or not country_code or not numbers:" >> whatsapp_automation.py
+        echo "        print('Failed to get valid data from numbers file')" >> whatsapp_automation.py
+        echo "        return" >> whatsapp_automation.py
+        echo "    print(f'Starting automation for {len(numbers)} numbers...')" >> whatsapp_automation.py
+        echo "    print('Make sure WhatsApp is ready for number input!')" >> whatsapp_automation.py
+        echo "    time.sleep(2)" >> whatsapp_automation.py
+        echo "    process_numbers(country_name, country_code, numbers)" >> whatsapp_automation.py
+        echo "    print('Automation completed! Check not_usable.txt for unusable numbers.')" >> whatsapp_automation.py
+        echo "" >> whatsapp_automation.py
+        echo "if __name__ == '__main__':" >> whatsapp_automation.py
+        echo "    main()" >> whatsapp_automation.py
         
-        with open("rough.txt", "w", encoding="utf-8") as f:
-            f.write(response.text)
-        print("Numbers file downloaded successfully!")
-        return True
-    except Exception as e:
-        print(f"Error downloading numbers file: {e}")
-        return False
-
-def read_numbers_file():
-    try:
-        with open("rough.txt", "r", encoding="utf-8") as f:
-            lines = [line.strip() for line in f.readlines() if line.strip()]
-        
-        if len(lines) < 3:
-            print("Error: File doesn't contain enough data")
-            return None, None, []
-        
-        country_name = lines[0]
-        country_code = lines[1]
-        numbers = lines[2:]
-        
-        print(f"Country: {country_name}")
-        print(f"Country code: {country_code}")
-        print(f"Numbers to check: {len(numbers)}")
-        
-        return country_name, country_code, numbers
-    except Exception as e:
-        print(f"Error reading numbers file: {e}")
-        return None, None, []
-
-def save_not_usable_number(number):
-    try:
-        with open("not_usable.txt", "a", encoding="utf-8") as f:
-            f.write(number + "\n")
-        print(f"Saved {number} to not_usable.txt")
-    except Exception as e:
-        print(f"Error saving to not_usable.txt: {e}")
-
-def save_request_review_number(number):
-    try:
-        with open("request_review.txt", "a", encoding="utf-8") as f:
-            f.write(number + "\n")
-        print(f"Saved {number} to request_review.txt")
-    except Exception as e:
-        print(f"Error saving to request_review.txt: {e}")
-
-def type_with_delay(text, delay=0.1):
-    """Type text with specified delay between characters"""
-    pyautogui.write(text, interval=delay)
-
-def wait_and_click(image, timeout=10, confidence=0.8):
-    """Wait for an image to appear and click it - QUICK VERSION"""
-    print(f"Searching for {image} on screen...")
-    start_time = time.time()
-    
-    while time.time() - start_time < timeout:
-        try:
-            location = pyautogui.locateOnScreen(image, confidence=confidence)
-            if location:
-                center = pyautogui.center(location)
-                print(f"Found {image} at: {location}")
-                print(f"Clicking at center: X: {center.x}, Y: {center.y}")
-                pyautogui.click(center)
-                print(f"Successfully clicked {image}!")
-                return True
-        except pyautogui.ImageNotFoundException:
-            pass
-        time.sleep(0.1)
-    
-    print(f"❌ {image} not found on screen within {timeout} seconds")
-    return False
-
-def wait_for_image(image, timeout=10, confidence=0.8):
-    """Wait for an image to appear without clicking it - QUICK VERSION"""
-    print(f"Searching for {image} on screen...")
-    start_time = time.time()
-    
-    while time.time() - start_time < timeout:
-        try:
-            location = pyautogui.locateOnScreen(image, confidence=confidence)
-            if location:
-                print(f"Found {image} at: {location}")
-                return True
-        except pyautogui.ImageNotFoundException:
-            pass
-        time.sleep(0.1)
-    
-    print(f"❌ {image} not found on screen within {timeout} seconds")
-    return False
-
-def check_too_long_phone_number():
-    """Check if too_long_phone_number.png is on screen and handle it - QUICK VERSION"""
-    if wait_for_image('too_long_phone_number.png', timeout=2):
-        print("⚠️ Too long phone number detected! Handling the error...")
-        
-        # Click ok.png
-        if wait_and_click('ok.png', timeout=5):
-            print("Clicked ok.png to dismiss the error")
-            time.sleep(1)
-            
-            # Press backspace 50 times to clear everything
-            print("Clearing phone number field with 50 backspaces...")
-            for _ in range(50):
-                keyboard.press_and_release('backspace')
-            time.sleep(1)
-            
-            print("Phone number field cleared successfully")
-            return True
-        else:
-            print("Failed to find ok.png")
-            return False
-    return False
-
-def process_numbers(country_name, country_code, numbers):
-    """Process all numbers through the WhatsApp verification flow - OPTIMIZED"""
-    
-    # Check for too_long_phone_number.png before starting
-    if check_too_long_phone_number():
-        print("Recovered from too_long_phone_number error, continuing...")
-    
-    # Click select_country.png
-    if not wait_and_click('select_country.png', timeout=10):
-        print("Failed to find select_country.png. Aborting.")
-        return
-    
-    time.sleep(2)
-    
-    # Check for too_long_phone_number.png after clicking select_country
-    if check_too_long_phone_number():
-        print("Recovered from too_long_phone_number error, continuing...")
-    
-    # Click search_the_country.png
-    if not wait_and_click('search_the_country.png', timeout=10):
-        print("Failed to find search_the_country.png. Aborting.")
-        return
-    
-    time.sleep(1)
-    
-    # Check for too_long_phone_number.png after clicking search_the_country
-    if check_too_long_phone_number():
-        print("Recovered from too_long_phone_number error, continuing...")
-    
-    # Type country name
-    print(f"Typing country: {country_name}")
-    type_with_delay(country_name)
-    time.sleep(1)
-    
-    # Check for too_long_phone_number.png after typing country name
-    if check_too_long_phone_number():
-        print("Recovered from too_long_phone_number error, continuing...")
-    
-    # Click confirm_the_country.png
-    if not wait_and_click('confirm_the_country.png', timeout=10):
-        print("Failed to find confirm_the_country.png. Aborting.")
-        return
-    
-    time.sleep(2)
-    
-    # Check for too_long_phone_number.png after clicking confirm_the_country
-    if check_too_long_phone_number():
-        print("Recovered from too_long_phone_number error, continuing...")
-    
-    # Process each number
-    for i, full_number in enumerate(numbers):
-        print(f"\n--- Processing number {i+1}/{len(numbers)}: {full_number} ---")
-        
-        # Check for too_long_phone_number.png before processing each number
-        if check_too_long_phone_number():
-            print("Recovered from too_long_phone_number error, continuing with current number...")
-        
-        # Remove country code from the number
-        if full_number.startswith(country_code):
-            number_without_code = full_number[len(country_code):]
-        else:
-            number_without_code = full_number
-            print(f"Warning: Number doesn't start with country code {country_code}")
-        
-        print(f"Typing number without country code: {number_without_code}")
-        
-        # Type the number without country code
-        type_with_delay(number_without_code)
-        time.sleep(0.5)
-        
-        # Check for too_long_phone_number.png after typing number
-        if check_too_long_phone_number():
-            print("Recovered from too_long_phone_number error, re-typing current number...")
-            type_with_delay(number_without_code)
-            time.sleep(0.5)
-        
-        # Click next.png
-        if not wait_and_click('next.png', timeout=10):
-            print("Failed to find next.png. Moving to next number.")
-            continue
-        
-        # Check for too_long_phone_number.png after clicking next
-        if check_too_long_phone_number():
-            print("Recovered from too_long_phone_number error, continuing to next number...")
-            continue
-        
-        # Wait for result (edit.png or not_usable.png) - QUICK VERSION
-        print("Waiting for result (edit.png or not_usable.png)...")
-        result_found = False
-        start_time = time.time()
-        
-        while time.time() - start_time < 8 and not result_found:
-            # Check for edit.png
-            if wait_for_image('edit.png', timeout=0.5):
-                print("Edit button found - number might be valid but needs modification")
-                wait_and_click('edit.png', timeout=2)
-                for _ in range(20):
-                    keyboard.press_and_release('backspace')
-                time.sleep(1)
-                result_found = True
-                break
-            
-            # Check for not_usable.png
-            if wait_for_image('not_usable.png', timeout=0.5):
-                print("Number is not usable - saving to file")
-                save_not_usable_number(full_number)
-                wait_and_click('not_usable.png', timeout=2)
-                result_found = True
-                break
-            
-            time.sleep(0.1)
-        
-        if not result_found:
-            print("Neither edit.png nor not_usable.png found - unexpected state")
-            pyautogui.press('esc')
-            time.sleep(2)
-            
-            if check_too_long_phone_number():
-                print("Recovered from too_long_phone_number error, continuing to next number...")
-                continue
-            
-            if wait_and_click('register_new_number.png', timeout=5):
-                print("Back at registration screen, continuing...")
-            else:
-                print("Could not recover to registration screen")
-                continue
-            continue
-        
-        # Handle registration flow after not_usable
-        if wait_for_image('not_usable.png', timeout=1):
-            if wait_and_click('register_new_number.png', timeout=8):
-                if check_too_long_phone_number():
-                    print("Recovered from too_long_phone_number error, continuing to next number...")
-                    continue
-                
-                wait_and_click('agree_2.png', timeout=5)
-                
-                if check_too_long_phone_number():
-                    print("Recovered from too_long_phone_number error, continuing to next number...")
-                    continue
-                
-                time.sleep(2)
-            else:
-                print("Failed to find register_new_number.png, checking for request_review.png...")
-                
-                if check_too_long_phone_number():
-                    print("Recovered from too_long_phone_number error, continuing to next number...")
-                    continue
-                
-                if wait_for_image('request_review.png', timeout=5):
-                    print("Found request_review.png - saving number to request_review.txt")
-                    save_request_review_number(full_number)
-                    
-                    if wait_and_click('show_option.png', timeout=8):
-                        if check_too_long_phone_number():
-                            print("Recovered from too_long_phone_number error, continuing to next number...")
-                            continue
-                        
-                        time.sleep(1)
-                        
-                        if wait_and_click('register_new_number_after_it_is_review.png', timeout=8):
-                            if check_too_long_phone_number():
-                                print("Recovered from too_long_phone_number error, continuing to next number...")
-                                continue
-                            
-                            time.sleep(1)
-                            
-                            if wait_and_click('agree_2.png', timeout=8):
-                                if check_too_long_phone_number():
-                                    print("Recovered from too_long_phone_number error, continuing to next number...")
-                                    continue
-                                
-                                print("Successfully navigated through request review flow")
-                                time.sleep(2)
-                            else:
-                                print("Failed to find agree_2.png after request review")
-                        else:
-                            print("Failed to find register_new_number_after_it_is_review.png")
-                    else:
-                        print("Failed to find show_option.png")
-                else:
-                    print("Neither register_new_number.png nor request_review.png found")
-
-def main():
-    print("Setting up number verification...")
-    if not download_numbers_file():
-        return
-    
-    country_name, country_code, numbers = read_numbers_file()
-    
-    if not country_name or not country_code or not numbers:
-        print("Failed to get valid data from numbers file")
-        return
-    
-    print(f"\nStarting automation for {len(numbers)} numbers...")
-    print("Make sure WhatsApp is ready for number input!")
-    
-    time.sleep(2)
-    
-    process_numbers(country_name, country_code, numbers)
-    
-    print("\nAutomation completed! Check not_usable.txt for unusable numbers.")
-
-if __name__ == "__main__":
-    main()
-"@ | Out-File -FilePath "$whatsappDir\whatsapp_automation.py" -Encoding utf8
-        
-        Write-Host "✅ Python script created"
+        Write-Host "✅ Python script created using echo method"
 
     - name: Download Cloudflared
       run: |
@@ -432,7 +347,7 @@ if __name__ == "__main__":
         Write-Host "   ✅ Repository downloaded and extracted"
         Write-Host "   ✅ MuMu files downloaded"
         Write-Host "   ✅ Python dependencies installed"
-        Write-Host "   ✅ Python script ready to run"
+        Write-Host "   ✅ Python script created using echo method"
         Write-Host ""
         Write-Host "🌐 CLOUDFLARE TUNNEL STARTING..."
         Write-Host "   Your RDP connection URL will appear below:"
