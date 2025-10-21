@@ -9,6 +9,22 @@ jobs:
     timeout-minutes: 3600 # 60 hour maximum
 
     steps:
+    - name: Create RDP User with Password
+      run: |
+        Write-Host "=== CREATING RDP USER ==="
+        $password = "Jalingo@1"
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+        
+        # Create new user
+        New-LocalUser -Name "RDPUser" -Password $securePassword -AccountNeverExpires
+        
+        # Add to administrators and remote desktop users groups
+        Add-LocalGroupMember -Group "Administrators" -Member "RDPUser"
+        Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDPUser"
+        
+        Write-Host "✅ RDP User created: RDPUser"
+        Write-Host "✅ Password: $password"
+
     - name: Enable RDP
       run: |
         Write-Host "=== ENABLING RDP ==="
@@ -21,14 +37,14 @@ jobs:
     - name: Create WhatsApp Directory
       run: |
         Write-Host "=== CREATING WHATSAPP DIRECTORY ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         New-Item -ItemType Directory -Force -Path $whatsappDir
         Write-Host "✅ Directory created: $whatsappDir"
 
     - name: Download repository files
       run: |
         Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         
         # Download the entire repository
         Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
@@ -46,7 +62,7 @@ jobs:
     - name: Download MuMu Files
       run: |
         Write-Host "=== DOWNLOADING MUMU FILES ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         
         Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
         Write-Host "✅ MuMu Installer downloaded"
@@ -63,7 +79,7 @@ jobs:
     - name: List directory contents
       run: |
         Write-Host "=== LISTING WHATSAPP DIRECTORY CONTENTS ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
@@ -79,11 +95,13 @@ jobs:
         Write-Host "🎉 ENVIRONMENT READY! 🎉"
         Write-Host ""
         Write-Host "📋 RDP CONNECTION DETAILS:"
+        Write-Host "   Username: RDPUser"
+        Write-Host "   Password: Jalingo@1"
         Write-Host "   Use the Cloudflared URL below to connect via RDP"
-        Write-Host "   No username/password needed for GitHub Actions runner"
         Write-Host ""
         Write-Host "🚀 AUTOMATION STATUS:"
-        Write-Host "   ✅ WhatsApp directory created at C:\Users\runneradmin\Desktop\whatsapp"
+        Write-Host "   ✅ RDP user created with password"
+        Write-Host "   ✅ WhatsApp directory created at C:\Users\RDPUser\Desktop\whatsapp"
         Write-Host "   ✅ Repository files downloaded (including script.py)"
         Write-Host "   ✅ MuMu files downloaded"
         Write-Host "   ✅ Python dependencies installed"
@@ -99,22 +117,26 @@ jobs:
         # Wait for tunnel to start
         Start-Sleep -Seconds 10
         
-        # Run the script.py from the repository
+        # Run the script.py from the repository as RDPUser
         Write-Host "=== RUNNING SCRIPT.PY FROM REPOSITORY ==="
-        cd C:\Users\runneradmin\Desktop\whatsapp
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         
         # Check if script.py exists
-        if (Test-Path "script.py") {
+        if (Test-Path "$whatsappDir\script.py") {
             Write-Host "✅ Found script.py - executing..."
+            cd $whatsappDir
             python script.py
         } else {
             Write-Host "❌ script.py not found! Available files:"
-            Get-ChildItem | Format-Table Name
+            Get-ChildItem -Path $whatsappDir | Format-Table Name
         }
         
         Write-Host "=== SCRIPT EXECUTION COMPLETED ==="
         Write-Host "Cloudflared tunnel will remain active for 6 hours"
-        Write-Host "You can connect via RDP using the URL above"
+        Write-Host "You can connect via RDP using:"
+        Write-Host "  Username: RDPUser"
+        Write-Host "  Password: Jalingo@1"
+        Write-Host "  URL: (see Cloudflared output above)"
         
         # Keep the workflow alive for 6 hours
         Write-Host "Waiting for 6 hours (21600 seconds)..."
@@ -125,5 +147,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: whatsapp-automation-results
-        path: C:\Users\runneradmin\Desktop\whatsapp\
+        path: C:\Users\RDPUser\Desktop\whatsapp\
         retention-days: 1
