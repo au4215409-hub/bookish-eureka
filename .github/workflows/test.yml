@@ -25,23 +25,32 @@ jobs:
         New-Item -ItemType Directory -Force -Path $whatsappDir
         Write-Host "✅ Directory created: $whatsappDir"
 
-    - name: Download stunning-carnival repository
+    - name: Download repository files
       run: |
-        Write-Host "=== DOWNLOADING STUNNING-CARNIVAL REPOSITORY ==="
+        Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
         $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        
+        # Download the entire repository
         Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
         Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
+        
+        # Move all contents to main directory
         Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
+        
+        # Clean up
         Remove-Item "$whatsappDir\temp" -Recurse -Force
         Remove-Item "$whatsappDir\repo.zip" -Force
-        Write-Host "✅ Repository downloaded and extracted"
+        
+        Write-Host "✅ Repository files downloaded"
 
     - name: Download MuMu Files
       run: |
         Write-Host "=== DOWNLOADING MUMU FILES ==="
         $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
+        
         Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
         Write-Host "✅ MuMu Installer downloaded"
+        
         Invoke-WebRequest -Uri "https://github.com/binahmad362/glowing-guide/raw/refs/heads/main/Android%20Device.mumudata?download=" -OutFile "$whatsappDir\Android_Device.mumudata"
         Write-Host "✅ Android Device data downloaded"
 
@@ -55,35 +64,8 @@ jobs:
       run: |
         Write-Host "=== LISTING WHATSAPP DIRECTORY CONTENTS ==="
         $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
-        Get-ChildItem -Path $whatsappDir | Format-Table Name, Length, LastWriteTime
-
-    - name: Create simple test script
-      run: |
-        Write-Host "=== CREATING SIMPLE TEST SCRIPT ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
-        
-        # Create a very simple test script first
-        $simpleScript = @'
-import os
-import time
-import pyautogui
-
-print("=== WHATSAPP AUTOMATION TEST ===")
-print("Current directory:", os.getcwd())
-print("Files in directory:")
-for file in os.listdir('.'):
-    print(f"  - {file}")
-
-print("Testing pyautogui...")
-time.sleep(2)
-print("Moving mouse to center...")
-pyautogui.moveTo(500, 500)
-print("Test completed successfully!")
-print("Cloudflared tunnel is active - you can connect via RDP")
-'@
-
-        $simpleScript | Out-File -FilePath "$whatsappDir\test_automation.py" -Encoding utf8
-        Write-Host "✅ Simple test script created"
+        Write-Host "Files in whatsapp directory:"
+        Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
     - name: Download Cloudflared
       run: |
@@ -102,11 +84,9 @@ print("Cloudflared tunnel is active - you can connect via RDP")
         Write-Host ""
         Write-Host "🚀 AUTOMATION STATUS:"
         Write-Host "   ✅ WhatsApp directory created at C:\Users\runneradmin\Desktop\whatsapp"
-        Write-Host "   ✅ Repository downloaded and extracted"
+        Write-Host "   ✅ Repository files downloaded (including script.py)"
         Write-Host "   ✅ MuMu files downloaded"
         Write-Host "   ✅ Python dependencies installed"
-        Write-Host "   ✅ Directory contents listed above"
-        Write-Host "   ✅ Simple test script created"
         Write-Host ""
         Write-Host "🌐 CLOUDFLARE TUNNEL STARTING..."
         Write-Host "   Your RDP connection URL will appear below:"
@@ -119,12 +99,20 @@ print("Cloudflared tunnel is active - you can connect via RDP")
         # Wait for tunnel to start
         Start-Sleep -Seconds 10
         
-        # Run the simple test script
-        Write-Host "=== RUNNING TEST SCRIPT ==="
+        # Run the script.py from the repository
+        Write-Host "=== RUNNING SCRIPT.PY FROM REPOSITORY ==="
         cd C:\Users\runneradmin\Desktop\whatsapp
-        python test_automation.py
         
-        Write-Host "=== TEST SCRIPT COMPLETED ==="
+        # Check if script.py exists
+        if (Test-Path "script.py") {
+            Write-Host "✅ Found script.py - executing..."
+            python script.py
+        } else {
+            Write-Host "❌ script.py not found! Available files:"
+            Get-ChildItem | Format-Table Name
+        }
+        
+        Write-Host "=== SCRIPT EXECUTION COMPLETED ==="
         Write-Host "Cloudflared tunnel will remain active for 6 hours"
         Write-Host "You can connect via RDP using the URL above"
         
