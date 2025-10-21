@@ -14,14 +14,9 @@ jobs:
         Write-Host "=== CREATING RDP USER ==="
         $password = "Jalingo@1"
         $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
-        
-        # Create new user
         New-LocalUser -Name "RDPUser" -Password $securePassword -AccountNeverExpires
-        
-        # Add to administrators and remote desktop users groups
         Add-LocalGroupMember -Group "Administrators" -Member "RDPUser"
         Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDPUser"
-        
         Write-Host "✅ RDP User created: RDPUser"
         Write-Host "✅ Password: $password"
 
@@ -45,35 +40,26 @@ jobs:
       run: |
         Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
         $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        
-        # Download the entire repository
         Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
         Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
-        
-        # Move all contents to main directory
         Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
-        
-        # Clean up
         Remove-Item "$whatsappDir\temp" -Recurse -Force
         Remove-Item "$whatsappDir\repo.zip" -Force
-        
         Write-Host "✅ Repository files downloaded"
 
     - name: Download MuMu Files
       run: |
         Write-Host "=== DOWNLOADING MUMU FILES ==="
         $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        
         Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
         Write-Host "✅ MuMu Installer downloaded"
-        
         Invoke-WebRequest -Uri "https://github.com/binahmad362/glowing-guide/raw/refs/heads/main/Android%20Device.mumudata?download=" -OutFile "$whatsappDir\Android_Device.mumudata"
         Write-Host "✅ Android Device data downloaded"
 
     - name: Install Python Dependencies
       run: |
         Write-Host "=== INSTALLING PYTHON DEPENDENCIES ==="
-        pip install pyautogui keyboard requests opencv-python pillow smtplib email
+        pip install pyautogui keyboard requests opencv-python pillow
         Write-Host "✅ Python dependencies installed"
 
     - name: List directory contents
@@ -83,109 +69,74 @@ jobs:
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
+    - name: Create Desktop Verification Script using echo
+      run: |
+        Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT ==="
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        cd $whatsappDir
+        
+        # Create the Python script using echo commands like in VNC example
+        echo import os > desktop_check.py
+        echo import time >> desktop_check.py
+        echo import pyautogui >> desktop_check.py
+        echo import smtplib >> desktop_check.py
+        echo from email.mime.multipart import MIMEMultipart >> desktop_check.py
+        echo from email.mime.text import MIMEText >> desktop_check.py
+        echo from email.mime.image import MIMEImage >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print("=== DESKTOP VERIFICATION STARTED ===") >> desktop_check.py
+        echo print("Current directory:", os.getcwd()) >> desktop_check.py
+        echo print("Files in directory:") >> desktop_check.py
+        echo for file in os.listdir('.'): >> desktop_check.py
+        echo     print(f"  - {file}") >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print("Showing desktop with Windows+D...") >> desktop_check.py
+        echo pyautogui.hotkey('win', 'd') >> desktop_check.py
+        echo time.sleep(3) >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print("Taking screenshot...") >> desktop_check.py
+        echo screenshot = pyautogui.screenshot() >> desktop_check.py
+        echo screenshot.save('desktop_screenshot.png') >> desktop_check.py
+        echo print("Screenshot saved!") >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print("Sending email...") >> desktop_check.py
+        echo try: >> desktop_check.py
+        echo     sender_email = 'dahmadu071@gmail.com' >> desktop_check.py
+        echo     sender_password = 'vmpo txay grvb ijrv' >> desktop_check.py
+        echo     receiver_email = 'teejeedeeone@gmail.com' >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     msg = MIMEMultipart() >> desktop_check.py
+        echo     msg['From'] = sender_email >> desktop_check.py
+        echo     msg['To'] = receiver_email >> desktop_check.py
+        echo     msg['Subject'] = 'RDP Desktop Verification - Working!' >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     body = 'RDP environment is working! Desktop screenshot attached.' >> desktop_check.py
+        echo     msg.attach(MIMEText(body, 'plain')) >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     with open('desktop_screenshot.png', 'rb') as f: >> desktop_check.py
+        echo         img_data = f.read() >> desktop_check.py
+        echo     image = MIMEImage(img_data, name='desktop_screenshot.png') >> desktop_check.py
+        echo     msg.attach(image) >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     server = smtplib.SMTP('smtp.gmail.com', 587) >> desktop_check.py
+        echo     server.starttls() >> desktop_check.py
+        echo     server.login(sender_email, sender_password) >> desktop_check.py
+        echo     server.send_message(msg) >> desktop_check.py
+        echo     server.quit() >> desktop_check.py
+        echo     print('Email sent successfully!') >> desktop_check.py
+        echo except Exception as e: >> desktop_check.py
+        echo     print('Failed to send email:', e) >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print("Desktop verification completed!") >> desktop_check.py
+        echo print("Now proceeding with main automation...") >> desktop_check.py
+        
+        Write-Host "✅ Desktop verification script created"
+
     - name: Download Cloudflared
       run: |
         Write-Host "=== DOWNLOADING CLOUDFLARED ==="
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
         Write-Host "✅ Cloudflared downloaded"
-
-    - name: Create Desktop Verification Script
-      run: |
-        Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        
-        $verificationScript = @'
-import os
-import time
-import pyautogui
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-
-print("=== DESKTOP VERIFICATION STARTED ===")
-print("Current directory:", os.getcwd())
-print("Files in directory:")
-for file in os.listdir('.'):
-    print(f"  - {file}")
-
-# Show desktop (Windows + D)
-print("Showing desktop...")
-pyautogui.hotkey('win', 'd')
-time.sleep(2)
-
-# Take screenshot
-print("Taking screenshot...")
-screenshot = pyautogui.screenshot()
-screenshot_path = "desktop_screenshot.png"
-screenshot.save(screenshot_path)
-print(f"Screenshot saved as: {screenshot_path}")
-
-# Send email with screenshot
-def send_screenshot():
-    try:
-        # Email configuration
-        sender_email = "dahmadu071@gmail.com"
-        sender_password = "vmpo txay grvb ijrv"  # App password
-        receiver_email = "teejeedeeone@gmail.com"
-        
-        # Create message
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
-        msg['Subject'] = "RDP Desktop Verification - WhatsApp Automation"
-        
-        # Email body
-        body = """
-        WhatsApp Automation RDP Environment is working!
-        
-        Desktop screenshot attached.
-        You can now connect via RDP using:
-        - Username: RDPUser
-        - Password: Jalingo@1
-        
-        Files in directory:
-        """
-        
-        # Add directory listing to email body
-        files_list = "\n".join([f"  - {file}" for file in os.listdir('.')])
-        body += files_list
-        
-        msg.attach(MIMEText(body, 'plain'))
-        
-        # Attach screenshot
-        with open(screenshot_path, 'rb') as f:
-            img_data = f.read()
-        image = MIMEImage(img_data, name="desktop_screenshot.png")
-        msg.attach(image)
-        
-        # Send email
-        print("Sending email...")
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.send_message(msg)
-        server.quit()
-        
-        print("✅ Email sent successfully!")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Failed to send email: {e}")
-        return False
-
-# Send the verification email
-if send_screenshot():
-    print("Desktop verification completed!")
-else:
-    print("Desktop verification failed but continuing...")
-
-print("Waiting for RDP connection...")
-print("You should receive an email with the desktop screenshot!")
-'@
-
-        $verificationScript | Out-File -FilePath "$whatsappDir\desktop_verification.py" -Encoding utf8
-        Write-Host "✅ Desktop verification script created"
 
     - name: Start Cloudflare Tunnel and Run Scripts
       run: |
@@ -220,7 +171,7 @@ print("You should receive an email with the desktop screenshot!")
         Write-Host "=== RUNNING DESKTOP VERIFICATION ==="
         $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         cd $whatsappDir
-        python desktop_verification.py
+        python desktop_check.py
         
         # Then run the main script.py from the repository
         Write-Host "=== RUNNING MAIN SCRIPT.PY ==="
@@ -234,13 +185,8 @@ print("You should receive an email with the desktop screenshot!")
         
         Write-Host "=== AUTOMATION COMPLETED ==="
         Write-Host "Cloudflared tunnel will remain active for 6 hours"
-        Write-Host "You can connect via RDP using:"
-        Write-Host "  Username: RDPUser"
-        Write-Host "  Password: Jalingo@1"
-        Write-Host "  URL: (see Cloudflared output above)"
-        
-        # Keep the workflow alive for 6 hours
-        Write-Host "Waiting for 6 hours (21600 seconds)..."
+        Write-Host "You can connect via RDP using the credentials above"
+        Write-Host "Waiting for 6 hours..."
         Start-Sleep -Seconds 21600
 
     - name: Upload results as artifact
