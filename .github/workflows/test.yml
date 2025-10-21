@@ -69,94 +69,51 @@ jobs:
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
-    - name: Create Desktop Verification Script with Email
+    - name: Create Desktop Verification Script
       run: |
-        Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT WITH EMAIL ==="
+        Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT ==="
         $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        # Create the script directly in the current working directory
-        $scriptContent = @'
-import os
-import time
-import pyautogui
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
+        # Use batch commands to create the Python script
+        cmd /c @"
+        cd /d "$whatsappDir"
+        echo import os > test_desktop.py
+        echo import time >> test_desktop.py
+        echo import pyautogui >> test_desktop.py
+        echo. >> test_desktop.py
+        echo print("Testing desktop...") >> test_desktop.py
+        echo time.sleep(2) >> test_desktop.py
+        echo print("Pressing Windows+D") >> test_desktop.py
+        echo pyautogui.hotkey("win", "d") >> test_desktop.py
+        echo time.sleep(2) >> test_desktop.py
+        echo print("Pressing Windows key") >> test_desktop.py
+        echo pyautogui.press("win") >> test_desktop.py
+        echo time.sleep(2) >> test_desktop.py
+        echo print("Taking screenshot") >> test_desktop.py
+        echo screenshot = pyautogui.screenshot() >> test_desktop.py
+        echo screenshot.save("test_screenshot.png") >> test_desktop.py
+        echo print("Screenshot saved") >> test_desktop.py
+        echo print("Test completed") >> test_desktop.py
+        "@
 
-print("=== STARTING DESKTOP VERIFICATION ===")
-print("Current directory:", os.getcwd())
-print("Files in directory:")
-for file in os.listdir('.'):
-    print(f"  - {file}")
-
-time.sleep(2)
-print("Pressing Windows+D to show desktop...")
-pyautogui.hotkey('win', 'd')
-time.sleep(2)
-print("Pressing Windows key alone...")
-pyautogui.press('win')
-time.sleep(2)
-print("Taking screenshot...")
-screenshot = pyautogui.screenshot()
-screenshot.save('desktop_screenshot.png')
-print("Screenshot saved!")
-
-def send_email():
-    print("Sending email with screenshot...")
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = 'dahmadu071@gmail.com'
-        msg['To'] = 'teejeedeeone@gmail.com'
-        msg['Subject'] = 'RDP Desktop Verification - Working!'
-        
-        body = 'RDP environment is working! Screenshot attached.'
-        msg.attach(MIMEText(body, 'plain'))
-        
-        with open('desktop_screenshot.png', 'rb') as f:
-            img_data = f.read()
-        image = MIMEImage(img_data, name='desktop_screenshot.png')
-        msg.attach(image)
-        
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login('dahmadu071@gmail.com', 'vmpo txay grvb ijrv')
-        server.send_message(msg)
-        server.quit()
-        print("Email sent successfully!")
-        return True
-    except Exception as e:
-        print("Email failed:", e)
-        return False
-
-send_email()
-print("Desktop verification completed!")
-print("Now the main automation can run...")
-'@
-
-        $scriptContent | Out-File -FilePath "$whatsappDir\desktop_check.py" -Encoding utf8
-        Write-Host "✅ Desktop verification script created at: $whatsappDir\desktop_check.py"
+        Write-Host "✅ Desktop test script created"
 
     - name: Run Desktop Verification Script
       run: |
         Write-Host "=== RUNNING DESKTOP VERIFICATION SCRIPT ==="
         $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        # Verify the file exists
-        Write-Host "Checking if script exists..."
-        if (Test-Path "$whatsappDir\desktop_check.py") {
-            Write-Host "✅ Script found at: $whatsappDir\desktop_check.py"
-            Write-Host "Current directory files:"
-            Get-ChildItem -Path $whatsappDir | Format-Table Name
-            
-            Write-Host "Executing desktop verification..."
+        Write-Host "Checking script location..."
+        if (Test-Path "$whatsappDir\test_desktop.py") {
+            Write-Host "✅ Script found - running now..."
             cd $whatsappDir
-            python desktop_check.py
-            Write-Host "✅ Desktop verification completed!"
+            python test_desktop.py
+            Write-Host "✅ Desktop test completed!"
         } else {
-            Write-Host "❌ Script not found at: $whatsappDir\desktop_check.py"
-            Write-Host "Available files in directory:"
-            Get-ChildItem -Path $whatsappDir | Format-Table Name
+            Write-Host "❌ Script not found"
+            Write-Host "Current directory: $(Get-Location)"
+            Write-Host "Files in $whatsappDir :"
+            Get-ChildItem -Path $whatsappDir
         }
 
     - name: Download Cloudflared
