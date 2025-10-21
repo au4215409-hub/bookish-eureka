@@ -62,22 +62,41 @@ jobs:
         pip install pyautogui keyboard requests opencv-python pillow
         Write-Host "✅ Python dependencies installed"
 
+    - name: Create RDPUser directories
+      run: |
+        Write-Host "=== CREATING RDPUSER DIRECTORIES ==="
+        # Create the necessary directories for RDPUser
+        $userDirs = @(
+            "C:\Users\RDPUser",
+            "C:\Users\RDPUser\Desktop",
+            "C:\Users\RDPUser\Documents",
+            "C:\Users\RDPUser\Downloads"
+        )
+        foreach ($dir in $userDirs) {
+            New-Item -ItemType Directory -Force -Path $dir
+        }
+        Write-Host "✅ RDPUser directories created"
+
     - name: Create desktop shortcut
       run: |
         Write-Host "=== CREATING DESKTOP SHORTCUT ==="
         $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
         $rdpUserDesktop = "C:\Users\RDPUser\Desktop"
-        $WshShell = New-Object -comObject WScript.Shell
-        $Shortcut = $WshShell.CreateShortcut("$rdpUserDesktop\WhatsApp Automation.lnk")
-        $Shortcut.TargetPath = $whatsappDir
-        $Shortcut.Save()
-        Write-Host "✅ Desktop shortcut created"
+        
+        # Create a simple batch file instead of shortcut
+        $batchContent = @"
+@echo off
+echo Opening WhatsApp Automation folder...
+explorer "C:\Users\Public\Desktop\whatsapp"
+"@
+        $batchContent | Out-File -FilePath "$rdpUserDesktop\Open WhatsApp Automation.bat" -Encoding ascii
+        Write-Host "✅ Desktop batch file created"
 
     - name: List directory contents
       run: |
         Write-Host "=== LISTING DIRECTORY CONTENTS ==="
         $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
-        Write-Host "Files in directory:"
+        Write-Host "Files in WhatsApp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
     - name: Download Cloudflared
@@ -97,8 +116,8 @@ jobs:
         Write-Host "   Use the Cloudflared URL below"
         Write-Host ""
         Write-Host "📁 FOLDER LOCATION:"
-        Write-Host "   Desktop shortcut: 'WhatsApp Automation'"
-        Write-Host "   OR: C:\Users\Public\Desktop\whatsapp"
+        Write-Host "   Desktop: 'Open WhatsApp Automation.bat'"
+        Write-Host "   OR navigate to: C:\Users\Public\Desktop\whatsapp"
         Write-Host ""
         Write-Host "🚀 SCRIPT: script.py (from repository)"
         Write-Host ""
@@ -120,10 +139,9 @@ jobs:
             Write-Host "❌ script.py not found"
             Write-Host "Available files:"
             Get-ChildItem | Format-Table Name
+            Write-Host "Waiting for RDP connection..."
+            Start-Sleep -Seconds 21600
         }
-        
-        Write-Host "=== KEEPING TUNNEL ACTIVE FOR 6 HOURS ==="
-        Start-Sleep -Seconds 21600
 
     - name: Upload results
       if: always()
