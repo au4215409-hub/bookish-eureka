@@ -1,183 +1,63 @@
-name: WhatsApp Automation with MuMu Emulator
-
-on:
-  workflow_dispatch: # Manual trigger only
-
-jobs:
-  whatsapp-automation:
-    runs-on: windows-latest
-    timeout-minutes: 3600 # 60 hour maximum
-
-    steps:
-    - name: Enable RDP
+    - name: Create full automation script
       run: |
-        Write-Host "=== ENABLING RDP ==="
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 0 -Force
-        netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
-        Restart-Service -Name TermService -Force
-        Write-Host "✅ RDP enabled"
-
-    - name: Create WhatsApp Directory
-      run: |
-        Write-Host "=== CREATING WHATSAPP DIRECTORY ==="
+        Write-Host "=== CREATING FULL AUTOMATION SCRIPT ==="
         $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
-        New-Item -ItemType Directory -Force -Path $whatsappDir
-        Write-Host "✅ Directory created: $whatsappDir"
-
-    - name: Download stunning-carnival repository
-      run: |
-        Write-Host "=== DOWNLOADING STUNNING-CARNIVAL REPOSITORY ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
-        Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
-        Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
-        Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
-        Remove-Item "$whatsappDir\temp" -Recurse -Force
-        Remove-Item "$whatsappDir\repo.zip" -Force
-        Write-Host "✅ Repository downloaded and extracted"
-
-    - name: Download MuMu Files
-      run: |
-        Write-Host "=== DOWNLOADING MUMU FILES ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
-        Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
-        Write-Host "✅ MuMu Installer downloaded"
-        Invoke-WebRequest -Uri "https://github.com/binahmad362/glowing-guide/raw/refs/heads/main/Android%20Device.mumudata?download=" -OutFile "$whatsappDir\Android_Device.mumudata"
-        Write-Host "✅ Android Device data downloaded"
-
-    - name: Install Python Dependencies
-      run: |
-        Write-Host "=== INSTALLING PYTHON DEPENDENCIES ==="
-        pip install pyautogui keyboard requests opencv-python pillow
-        Write-Host "✅ Python dependencies installed"
-
-    - name: List directory contents
-      run: |
-        Write-Host "=== LISTING WHATSAPP DIRECTORY CONTENTS ==="
-        $whatsappDir = "C:\Users\runneradmin\Desktop\whatsapp"
-        Get-ChildItem -Path $whatsappDir | Format-Table Name, Length, LastWriteTime
-
-    - name: Create Python Script using batch commands
-      run: |
-        Write-Host "=== CREATING PYTHON SCRIPT USING BATCH ==="
-        cd C:\Users\runneradmin\Desktop\whatsapp
         
-        cmd /c "@echo off
-        echo import os > whatsapp_automation.py
-        echo import time >> whatsapp_automation.py
-        echo import pyautogui >> whatsapp_automation.py
-        echo import requests >> whatsapp_automation.py
-        echo import keyboard >> whatsapp_automation.py
-        echo. >> whatsapp_automation.py
-        echo print(\"=== STARTING WHATSAPP AUTOMATION ===\") >> whatsapp_automation.py
-        echo print(\"Current working directory:\") >> whatsapp_automation.py
-        echo print(os.getcwd()) >> whatsapp_automation.py
-        echo print(\"Files in directory:\") >> whatsapp_automation.py
-        echo for file in os.listdir('.'): >> whatsapp_automation.py
-        echo     print(f\"  - {file}\") >> whatsapp_automation.py
-        echo. >> whatsapp_automation.py
-        echo pyautogui.FAILSAFE = True >> whatsapp_automation.py
-        echo. >> whatsapp_automation.py
-        echo def download_numbers_file(): >> whatsapp_automation.py
-        echo     url = \"https://raw.githubusercontent.com/binahmad362/bookish-octo-couscous/main/rough.txt\" >> whatsapp_automation.py
-        echo     try: >> whatsapp_automation.py
-        echo         print(\"Downloading numbers file...\") >> whatsapp_automation.py
-        echo         response = requests.get(url) >> whatsapp_automation.py
-        echo         response.raise_for_status() >> whatsapp_automation.py
-        echo         with open(\"rough.txt\", \"w\", encoding=\"utf-8\") as f: >> whatsapp_automation.py
-        echo             f.write(response.text) >> whatsapp_automation.py
-        echo         print(\"Numbers file downloaded successfully!\") >> whatsapp_automation.py
-        echo         return True >> whatsapp_automation.py
-        echo     except Exception as e: >> whatsapp_automation.py
-        echo         print(f\"Error downloading numbers file: {e}\") >> whatsapp_automation.py
-        echo         return False >> whatsapp_automation.py
-        echo. >> whatsapp_automation.py
-        echo def read_numbers_file(): >> whatsapp_automation.py
-        echo     try: >> whatsapp_automation.py
-        echo         with open(\"rough.txt\", \"r\", encoding=\"utf-8\") as f: >> whatsapp_automation.py
-        echo             lines = [line.strip() for line in f.readlines() if line.strip()] >> whatsapp_automation.py
-        echo         if len(lines) < 3: >> whatsapp_automation.py
-        echo             print(\"Error: File doesn't contain enough data\") >> whatsapp_automation.py
-        echo             return None, None, [] >> whatsapp_automation.py
-        echo         country_name = lines[0] >> whatsapp_automation.py
-        echo         country_code = lines[1] >> whatsapp_automation.py
-        echo         numbers = lines[2:] >> whatsapp_automation.py
-        echo         print(f\"Country: {country_name}\") >> whatsapp_automation.py
-        echo         print(f\"Country code: {country_code}\") >> whatsapp_automation.py
-        echo         print(f\"Numbers to check: {len(numbers)}\") >> whatsapp_automation.py
-        echo         return country_name, country_code, numbers >> whatsapp_automation.py
-        echo     except Exception as e: >> whatsapp_automation.py
-        echo         print(f\"Error reading numbers file: {e}\") >> whatsapp_automation.py
-        echo         return None, None, [] >> whatsapp_automation.py
-        echo. >> whatsapp_automation.py
-        echo def main(): >> whatsapp_automation.py
-        echo     print(\"Setting up number verification...\") >> whatsapp_automation.py
-        echo     if not download_numbers_file(): >> whatsapp_automation.py
-        echo         return >> whatsapp_automation.py
-        echo     country_name, country_code, numbers = read_numbers_file() >> whatsapp_automation.py
-        echo     if not country_name or not country_code or not numbers: >> whatsapp_automation.py
-        echo         print(\"Failed to get valid data from numbers file\") >> whatsapp_automation.py
-        echo         return >> whatsapp_automation.py
-        echo     print(f\"Starting automation for {len(numbers)} numbers...\") >> whatsapp_automation.py
-        echo     print(\"Make sure WhatsApp is ready for number input!\") >> whatsapp_automation.py
-        echo     time.sleep(2) >> whatsapp_automation.py
-        echo     print(\"Automation simulation completed!\") >> whatsapp_automation.py
-        echo. >> whatsapp_automation.py
-        echo if __name__ == '__main__': >> whatsapp_automation.py
-        echo     main() >> whatsapp_automation.py"
-        
-        Write-Host "✅ Python script created"
+        $fullScript = @'
+import os
+import time
+import pyautogui
+import requests
+import keyboard
 
-    - name: Download Cloudflared
-      run: |
-        Write-Host "=== DOWNLOADING CLOUDFLARED ==="
-        Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
-        Write-Host "✅ Cloudflared downloaded"
+print("=== WHATSAPP AUTOMATION STARTED ===")
+print("Directory:", os.getcwd())
+print("Files:", list(os.listdir('.')))
 
-    - name: Start Cloudflare Tunnel and Run Script
-      run: |
-        Write-Host "=== STARTING CLOUDFLARE TUNNEL ==="
-        Write-Host "🎉 ENVIRONMENT READY! 🎉"
-        Write-Host ""
-        Write-Host "📋 RDP CONNECTION DETAILS:"
-        Write-Host "   Use the Cloudflared URL below to connect via RDP"
-        Write-Host "   No username/password needed for GitHub Actions runner"
-        Write-Host ""
-        Write-Host "🚀 AUTOMATION STATUS:"
-        Write-Host "   ✅ WhatsApp directory created at C:\Users\runneradmin\Desktop\whatsapp"
-        Write-Host "   ✅ Repository downloaded and extracted"
-        Write-Host "   ✅ MuMu files downloaded"
-        Write-Host "   ✅ Python dependencies installed"
-        Write-Host "   ✅ Directory contents listed above"
-        Write-Host "   ✅ Python script created"
-        Write-Host ""
-        Write-Host "🌐 CLOUDFLARE TUNNEL STARTING..."
-        Write-Host "   Your RDP connection URL will appear below:"
-        Write-Host "   This will keep running for 6 hours"
-        Write-Host ""
-        
-        # Start cloudflared tunnel in background
-        Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
-        
-        # Wait for tunnel to start
-        Start-Sleep -Seconds 10
-        
-        # Run the Python script
-        Write-Host "=== RUNNING PYTHON AUTOMATION SCRIPT ==="
-        cd C:\Users\runneradmin\Desktop\whatsapp
-        python whatsapp_automation.py
-        
-        Write-Host "=== SCRIPT COMPLETED ==="
-        Write-Host "Cloudflared tunnel will remain active for 6 hours"
-        Write-Host "You can connect via RDP using the URL above"
-        
-        # Keep the workflow alive for 6 hours
-        Start-Sleep -Seconds 21600
+pyautogui.FAILSAFE = True
 
-    - name: Upload results as artifact
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: whatsapp-automation-results
-        path: C:\Users\runneradmin\Desktop\whatsapp\
-        retention-days: 1
+def download_numbers():
+    print("Downloading numbers file...")
+    try:
+        response = requests.get("https://raw.githubusercontent.com/binahmad362/bookish-octo-couscous/main/rough.txt")
+        with open("rough.txt", "w") as f:
+            f.write(response.text)
+        print("Numbers file downloaded!")
+        return True
+    except Exception as e:
+        print("Error:", e)
+        return False
+
+def read_numbers():
+    try:
+        with open("rough.txt", "r") as f:
+            lines = [line.strip() for line in f if line.strip()]
+        if len(lines) >= 3:
+            country = lines[0]
+            code = lines[1] 
+            numbers = lines[2:]
+            print(f"Country: {country}, Code: {code}, Numbers: {len(numbers)}")
+            return country, code, numbers
+    except Exception as e:
+        print("Error reading file:", e)
+    return None, None, []
+
+print("Starting automation process...")
+if download_numbers():
+    country, code, numbers = read_numbers()
+    if country and numbers:
+        print(f"Will process {len(numbers)} numbers")
+        print("Automation ready - connect via RDP to see it running!")
+    else:
+        print("No numbers to process")
+else:
+    print("Failed to download numbers")
+
+print("Keeping system active for RDP connection...")
+for i in range(360):  # 6 hours
+    print(f"Still running... {i}/360 (10 min intervals)")
+    time.sleep(600)
+'@
+
+        $fullScript | Out-File -FilePath "$whatsappDir\whatsapp_automation.py" -Encoding utf8
+        Write-Host "✅ Full automation script created"
