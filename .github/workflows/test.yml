@@ -130,24 +130,26 @@ jobs:
         
         Write-Host "✅ Desktop verification script with email created"
 
+    - name: Run Desktop Verification Script
+      run: |
+        Write-Host "=== RUNNING DESKTOP VERIFICATION SCRIPT ==="
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        cd $whatsappDir
+        
+        Write-Host "Executing desktop verification..."
+        python desktop_check.py
+        Write-Host "✅ Desktop verification completed - you should receive an email!"
+
     - name: Download Cloudflared
       run: |
         Write-Host "=== DOWNLOADING CLOUDFLARED ==="
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
         Write-Host "✅ Cloudflared downloaded"
 
-    - name: Run Desktop Verification and Start Tunnel
+    - name: Start Cloudflare Tunnel
       run: |
-        Write-Host "=== STARTING DESKTOP VERIFICATION ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        cd $whatsappDir
-        
-        Write-Host "Running desktop verification script..."
-        python desktop_check.py
-        Write-Host "✅ Desktop verification completed!"
-        
         Write-Host "=== STARTING CLOUDFLARE TUNNEL ==="
-        Write-Host "🎉 ENVIRONMENT READY! 🎉"
+        Write-Host "🎉 DESKTOP VERIFICATION COMPLETE! 🎉"
         Write-Host ""
         Write-Host "📋 RDP CONNECTION DETAILS:"
         Write-Host "   Username: RDPUser"
