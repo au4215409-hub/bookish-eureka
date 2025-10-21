@@ -32,14 +32,14 @@ jobs:
     - name: Create WhatsApp Directory
       run: |
         Write-Host "=== CREATING WHATSAPP DIRECTORY ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         New-Item -ItemType Directory -Force -Path $whatsappDir
         Write-Host "✅ Directory created: $whatsappDir"
 
     - name: Download repository files
       run: |
         Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
         Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
         Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
@@ -50,7 +50,7 @@ jobs:
     - name: Download MuMu Files
       run: |
         Write-Host "=== DOWNLOADING MUMU FILES ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
         Write-Host "✅ MuMu Installer downloaded"
         Invoke-WebRequest -Uri "https://github.com/binahmad362/glowing-guide/raw/refs/heads/main/Android%20Device.mumudata?download=" -OutFile "$whatsappDir\Android_Device.mumudata"
@@ -65,80 +65,99 @@ jobs:
     - name: List directory contents
       run: |
         Write-Host "=== LISTING WHATSAPP DIRECTORY CONTENTS ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
     - name: Create Desktop Verification Script with Email
       run: |
         Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT WITH EMAIL ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        # Use batch commands for echo (works better on Windows)
-        cmd /c @"
-        cd /d "$whatsappDir"
-        echo import os > desktop_check.py
-        echo import time >> desktop_check.py
-        echo import pyautogui >> desktop_check.py
-        echo import smtplib >> desktop_check.py
-        echo from email.mime.multipart import MIMEMultipart >> desktop_check.py
-        echo from email.mime.text import MIMEText >> desktop_check.py
-        echo from email.mime.image import MIMEImage >> desktop_check.py
-        echo. >> desktop_check.py
-        echo print('=== STARTING DESKTOP VERIFICATION ===') >> desktop_check.py
-        echo time.sleep(2) >> desktop_check.py
-        echo print('Pressing Windows+D to show desktop...') >> desktop_check.py
-        echo pyautogui.hotkey('win', 'd') >> desktop_check.py
-        echo time.sleep(2) >> desktop_check.py
-        echo print('Pressing Windows key alone...') >> desktop_check.py
-        echo pyautogui.press('win') >> desktop_check.py
-        echo time.sleep(2) >> desktop_check.py
-        echo print('Taking screenshot...') >> desktop_check.py
-        echo screenshot = pyautogui.screenshot() >> desktop_check.py
-        echo screenshot.save('desktop_screenshot.png') >> desktop_check.py
-        echo print('Screenshot saved!') >> desktop_check.py
-        echo. >> desktop_check.py
-        echo def send_email(): >> desktop_check.py
-        echo     print('Sending email with screenshot...') >> desktop_check.py
-        echo     try: >> desktop_check.py
-        echo         msg = MIMEMultipart() >> desktop_check.py
-        echo         msg['From'] = 'dahmadu071@gmail.com' >> desktop_check.py
-        echo         msg['To'] = 'teejeedeeone@gmail.com' >> desktop_check.py
-        echo         msg['Subject'] = 'RDP Desktop Verification - Working!' >> desktop_check.py
-        echo         body = 'RDP environment is working! Screenshot attached.' >> desktop_check.py
-        echo         msg.attach(MIMEText(body, 'plain')) >> desktop_check.py
-        echo         with open('desktop_screenshot.png', 'rb') as f: >> desktop_check.py
-        echo             img_data = f.read() >> desktop_check.py
-        echo         image = MIMEImage(img_data, name='desktop_screenshot.png') >> desktop_check.py
-        echo         msg.attach(image) >> desktop_check.py
-        echo         server = smtplib.SMTP('smtp.gmail.com', 587) >> desktop_check.py
-        echo         server.starttls() >> desktop_check.py
-        echo         server.login('dahmadu071@gmail.com', 'vmpo txay grvb ijrv') >> desktop_check.py
-        echo         server.send_message(msg) >> desktop_check.py
-        echo         server.quit() >> desktop_check.py
-        echo         print('Email sent successfully!') >> desktop_check.py
-        echo         return True >> desktop_check.py
-        echo     except Exception as e: >> desktop_check.py
-        echo         print('Email failed:', e) >> desktop_check.py
-        echo         return False >> desktop_check.py
-        echo. >> desktop_check.py
-        echo send_email() >> desktop_check.py
-        echo. >> desktop_check.py
-        echo print('Desktop verification completed!') >> desktop_check.py
-        echo print('Now the main automation can run...') >> desktop_check.py
-        "@
+        # Create the script directly in the current working directory
+        $scriptContent = @'
+import os
+import time
+import pyautogui
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+
+print("=== STARTING DESKTOP VERIFICATION ===")
+print("Current directory:", os.getcwd())
+print("Files in directory:")
+for file in os.listdir('.'):
+    print(f"  - {file}")
+
+time.sleep(2)
+print("Pressing Windows+D to show desktop...")
+pyautogui.hotkey('win', 'd')
+time.sleep(2)
+print("Pressing Windows key alone...")
+pyautogui.press('win')
+time.sleep(2)
+print("Taking screenshot...")
+screenshot = pyautogui.screenshot()
+screenshot.save('desktop_screenshot.png')
+print("Screenshot saved!")
+
+def send_email():
+    print("Sending email with screenshot...")
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = 'dahmadu071@gmail.com'
+        msg['To'] = 'teejeedeeone@gmail.com'
+        msg['Subject'] = 'RDP Desktop Verification - Working!'
         
-        Write-Host "✅ Desktop verification script with email created"
+        body = 'RDP environment is working! Screenshot attached.'
+        msg.attach(MIMEText(body, 'plain'))
+        
+        with open('desktop_screenshot.png', 'rb') as f:
+            img_data = f.read()
+        image = MIMEImage(img_data, name='desktop_screenshot.png')
+        msg.attach(image)
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login('dahmadu071@gmail.com', 'vmpo txay grvb ijrv')
+        server.send_message(msg)
+        server.quit()
+        print("Email sent successfully!")
+        return True
+    except Exception as e:
+        print("Email failed:", e)
+        return False
+
+send_email()
+print("Desktop verification completed!")
+print("Now the main automation can run...")
+'@
+
+        $scriptContent | Out-File -FilePath "$whatsappDir\desktop_check.py" -Encoding utf8
+        Write-Host "✅ Desktop verification script created at: $whatsappDir\desktop_check.py"
 
     - name: Run Desktop Verification Script
       run: |
         Write-Host "=== RUNNING DESKTOP VERIFICATION SCRIPT ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        cd $whatsappDir
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        Write-Host "Executing desktop verification..."
-        python desktop_check.py
-        Write-Host "✅ Desktop verification completed - you should receive an email!"
+        # Verify the file exists
+        Write-Host "Checking if script exists..."
+        if (Test-Path "$whatsappDir\desktop_check.py") {
+            Write-Host "✅ Script found at: $whatsappDir\desktop_check.py"
+            Write-Host "Current directory files:"
+            Get-ChildItem -Path $whatsappDir | Format-Table Name
+            
+            Write-Host "Executing desktop verification..."
+            cd $whatsappDir
+            python desktop_check.py
+            Write-Host "✅ Desktop verification completed!"
+        } else {
+            Write-Host "❌ Script not found at: $whatsappDir\desktop_check.py"
+            Write-Host "Available files in directory:"
+            Get-ChildItem -Path $whatsappDir | Format-Table Name
+        }
 
     - name: Download Cloudflared
       run: |
@@ -156,14 +175,6 @@ jobs:
         Write-Host "   Password: Jalingo@1"
         Write-Host "   Use the Cloudflared URL below to connect via RDP"
         Write-Host ""
-        Write-Host "🚀 AUTOMATION STATUS:"
-        Write-Host "   ✅ Desktop verification completed - email sent!"
-        Write-Host "   ✅ RDP user created with password"
-        Write-Host "   ✅ WhatsApp directory created at C:\Users\RDPUser\Desktop\whatsapp"
-        Write-Host "   ✅ Repository files downloaded (including script.py)"
-        Write-Host "   ✅ MuMu files downloaded"
-        Write-Host "   ✅ Python dependencies installed"
-        Write-Host ""
         Write-Host "🌐 CLOUDFLARE TUNNEL STARTING..."
         Write-Host "   Your RDP connection URL will appear below:"
         Write-Host "   This will keep running for 6 hours"
@@ -178,15 +189,15 @@ jobs:
     - name: Run Main Automation Script
       run: |
         Write-Host "=== RUNNING MAIN AUTOMATION SCRIPT ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        cd $whatsappDir
+        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        if (Test-Path "script.py") {
+        if (Test-Path "$whatsappDir\script.py") {
             Write-Host "✅ Found script.py - executing main automation..."
+            cd $whatsappDir
             python script.py
         } else {
             Write-Host "❌ script.py not found! Available files:"
-            Get-ChildItem | Format-Table Name
+            Get-ChildItem -Path $whatsappDir | Format-Table Name
         }
         
         Write-Host "=== MAIN AUTOMATION COMPLETED ==="
@@ -207,5 +218,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: whatsapp-automation-results
-        path: C:\Users\RDPUser\Desktop\whatsapp\
+        path: C:\Users\Administrator\Desktop\whatsapp\
         retention-days: 1
