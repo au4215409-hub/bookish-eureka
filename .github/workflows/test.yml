@@ -69,9 +69,9 @@ jobs:
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
-    - name: Create Desktop Verification Script using batch
+    - name: Create Desktop Verification Script with Email
       run: |
-        Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT ==="
+        Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT WITH EMAIL ==="
         $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         
         # Use batch commands for echo (works better on Windows)
@@ -80,6 +80,10 @@ jobs:
         echo import os > desktop_check.py
         echo import time >> desktop_check.py
         echo import pyautogui >> desktop_check.py
+        echo import smtplib >> desktop_check.py
+        echo from email.mime.multipart import MIMEMultipart >> desktop_check.py
+        echo from email.mime.text import MIMEText >> desktop_check.py
+        echo from email.mime.image import MIMEImage >> desktop_check.py
         echo. >> desktop_check.py
         echo print('Starting desktop verification...') >> desktop_check.py
         echo time.sleep(2) >> desktop_check.py
@@ -90,11 +94,36 @@ jobs:
         echo screenshot = pyautogui.screenshot() >> desktop_check.py
         echo screenshot.save('desktop_screenshot.png') >> desktop_check.py
         echo print('Screenshot saved!') >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print('Sending email with screenshot...') >> desktop_check.py
+        echo try: >> desktop_check.py
+        echo     msg = MIMEMultipart() >> desktop_check.py
+        echo     msg['From'] = 'dahmadu071@gmail.com' >> desktop_check.py
+        echo     msg['To'] = 'teejeedeeone@gmail.com' >> desktop_check.py
+        echo     msg['Subject'] = 'RDP Desktop Verification - Working!' >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     body = 'RDP environment is working! Screenshot attached.' >> desktop_check.py
+        echo     msg.attach(MIMEText(body, 'plain')) >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     with open('desktop_screenshot.png', 'rb') as f: >> desktop_check.py
+        echo         img_data = f.read() >> desktop_check.py
+        echo     image = MIMEImage(img_data, name='desktop_screenshot.png') >> desktop_check.py
+        echo     msg.attach(image) >> desktop_check.py
+        echo. >> desktop_check.py
+        echo     server = smtplib.SMTP('smtp.gmail.com', 587) >> desktop_check.py
+        echo     server.starttls() >> desktop_check.py
+        echo     server.login('dahmadu071@gmail.com', 'vmpo txay grvb ijrv') >> desktop_check.py
+        echo     server.send_message(msg) >> desktop_check.py
+        echo     server.quit() >> desktop_check.py
+        echo     print('Email sent successfully!') >> desktop_check.py
+        echo except Exception as e: >> desktop_check.py
+        echo     print('Email failed:', e) >> desktop_check.py
+        echo. >> desktop_check.py
         echo print('Desktop verification completed!') >> desktop_check.py
         echo print('Now running main script...') >> desktop_check.py
         "@
         
-        Write-Host "✅ Desktop verification script created"
+        Write-Host "✅ Desktop verification script with email created"
 
     - name: Download Cloudflared
       run: |
@@ -118,7 +147,7 @@ jobs:
         Write-Host "   ✅ Repository files downloaded (including script.py)"
         Write-Host "   ✅ MuMu files downloaded"
         Write-Host "   ✅ Python dependencies installed"
-        Write-Host "   ✅ Desktop verification script created"
+        Write-Host "   ✅ Desktop verification script with email created"
         Write-Host ""
         Write-Host "🌐 CLOUDFLARE TUNNEL STARTING..."
         Write-Host "   Your RDP connection URL will appear below:"
