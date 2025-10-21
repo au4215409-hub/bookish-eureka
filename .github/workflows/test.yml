@@ -34,17 +34,18 @@ jobs:
         Restart-Service -Name TermService -Force
         Write-Host "✅ RDP enabled"
 
-    - name: Create WhatsApp Directory
+    - name: Create WhatsApp Directory for RDPUser
       run: |
-        Write-Host "=== CREATING WHATSAPP DIRECTORY ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        Write-Host "=== CREATING WHATSAPP DIRECTORY FOR RDPUSER ==="
+        # Create directory in Public desktop so all users can see it
+        $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
         New-Item -ItemType Directory -Force -Path $whatsappDir
         Write-Host "✅ Directory created: $whatsappDir"
 
     - name: Download repository files
       run: |
         Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
         
         # Download the entire repository
         Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
@@ -62,7 +63,7 @@ jobs:
     - name: Download MuMu Files
       run: |
         Write-Host "=== DOWNLOADING MUMU FILES ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
         
         Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
         Write-Host "✅ MuMu Installer downloaded"
@@ -76,10 +77,24 @@ jobs:
         pip install pyautogui keyboard requests opencv-python pillow
         Write-Host "✅ Python dependencies installed"
 
+    - name: Create desktop shortcut for RDPUser
+      run: |
+        Write-Host "=== CREATING DESKTOP SHORTCUT ==="
+        $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
+        $rdpUserDesktop = "C:\Users\RDPUser\Desktop"
+        
+        # Create shortcut to whatsapp folder on RDPUser's desktop
+        $WshShell = New-Object -comObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("$rdpUserDesktop\WhatsApp Automation.lnk")
+        $Shortcut.TargetPath = $whatsappDir
+        $Shortcut.Save()
+        
+        Write-Host "✅ Desktop shortcut created for RDPUser"
+
     - name: List directory contents
       run: |
         Write-Host "=== LISTING WHATSAPP DIRECTORY CONTENTS ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
@@ -89,7 +104,7 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
         Write-Host "✅ Cloudflared downloaded"
 
-    - name: Start Cloudflare Tunnel and Run Script
+    - name: Start Cloudflare Tunnel and Run Script as RDPUser
       run: |
         Write-Host "=== STARTING CLOUDFLARE TUNNEL ==="
         Write-Host "🎉 ENVIRONMENT READY! 🎉"
@@ -99,9 +114,14 @@ jobs:
         Write-Host "   Password: Jalingo@1"
         Write-Host "   Use the Cloudflared URL below to connect via RDP"
         Write-Host ""
+        Write-Host "📁 FOLDER LOCATION:"
+        Write-Host "   Look for 'WhatsApp Automation' shortcut on desktop"
+        Write-Host "   OR navigate to: C:\Users\Public\Desktop\whatsapp"
+        Write-Host ""
         Write-Host "🚀 AUTOMATION STATUS:"
         Write-Host "   ✅ RDP user created with password"
-        Write-Host "   ✅ WhatsApp directory created at C:\Users\RDPUser\Desktop\whatsapp"
+        Write-Host "   ✅ WhatsApp directory created in Public folder"
+        Write-Host "   ✅ Desktop shortcut created"
         Write-Host "   ✅ Repository files downloaded (including script.py)"
         Write-Host "   ✅ MuMu files downloaded"
         Write-Host "   ✅ Python dependencies installed"
@@ -117,9 +137,9 @@ jobs:
         # Wait for tunnel to start
         Start-Sleep -Seconds 10
         
-        # Run the script.py from the repository as RDPUser
+        # Run the script.py from the repository
         Write-Host "=== RUNNING SCRIPT.PY FROM REPOSITORY ==="
-        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\Public\Desktop\whatsapp"
         
         # Check if script.py exists
         if (Test-Path "$whatsappDir\script.py") {
@@ -129,6 +149,21 @@ jobs:
         } else {
             Write-Host "❌ script.py not found! Available files:"
             Get-ChildItem -Path $whatsappDir | Format-Table Name
+            Write-Host "Creating a simple test script instead..."
+            $testScript = @'
+import os
+import time
+print("=== TEST SCRIPT RUNNING ===")
+print("Current directory:", os.getcwd())
+print("Files:", os.listdir('.'))
+print("Script will run for 6 hours...")
+for i in range(360):
+    print(f"Still running... {i+1}/360 (10 minute intervals)")
+    time.sleep(600)
+'@
+            $testScript | Out-File -FilePath "$whatsappDir\test_script.py" -Encoding utf8
+            cd $whatsappDir
+            python test_script.py
         }
         
         Write-Host "=== SCRIPT EXECUTION COMPLETED ==="
@@ -136,8 +171,8 @@ jobs:
         Write-Host "You can connect via RDP using:"
         Write-Host "  Username: RDPUser"
         Write-Host "  Password: Jalingo@1"
-        Write-Host "  URL: (see Cloudflared output above)"
-        
+        Write-Host "  Look for 'WhatsApp Automation' shortcut on desktop"
+
         # Keep the workflow alive for 6 hours
         Write-Host "Waiting for 6 hours (21600 seconds)..."
         Start-Sleep -Seconds 21600
@@ -147,5 +182,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: whatsapp-automation-results
-        path: C:\Users\RDPUser\Desktop\whatsapp\
+        path: C:\Users\Public\Desktop\whatsapp\
         retention-days: 1
