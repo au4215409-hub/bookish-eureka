@@ -32,14 +32,14 @@ jobs:
     - name: Create WhatsApp Directory
       run: |
         Write-Host "=== CREATING WHATSAPP DIRECTORY ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         New-Item -ItemType Directory -Force -Path $whatsappDir
         Write-Host "✅ Directory created: $whatsappDir"
 
     - name: Download repository files
       run: |
         Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
         Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
         Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
@@ -50,7 +50,7 @@ jobs:
     - name: Download MuMu Files
       run: |
         Write-Host "=== DOWNLOADING MUMU FILES ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         Invoke-WebRequest -Uri "https://a11.gdl.netease.com/MuMu_5.0.4_gw-win-download_all_1756402042.exe?n=MuMu_5.0.4_r9kVqqC.exe" -OutFile "$whatsappDir\MuMu_Installer.exe"
         Write-Host "✅ MuMu Installer downloaded"
         Invoke-WebRequest -Uri "https://github.com/binahmad362/glowing-guide/raw/refs/heads/main/Android%20Device.mumudata?download=" -OutFile "$whatsappDir\Android_Device.mumudata"
@@ -65,56 +65,36 @@ jobs:
     - name: List directory contents
       run: |
         Write-Host "=== LISTING WHATSAPP DIRECTORY CONTENTS ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         Write-Host "Files in whatsapp directory:"
         Get-ChildItem -Path $whatsappDir | Format-Table Name, Length
 
-    - name: Create Desktop Verification Script
+    - name: Create Desktop Verification Script using batch
       run: |
         Write-Host "=== CREATING DESKTOP VERIFICATION SCRIPT ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         
-        # Use batch commands to create the Python script
+        # Use batch commands for echo (works better on Windows)
         cmd /c @"
         cd /d "$whatsappDir"
-        echo import os > test_desktop.py
-        echo import time >> test_desktop.py
-        echo import pyautogui >> test_desktop.py
-        echo. >> test_desktop.py
-        echo print("Testing desktop...") >> test_desktop.py
-        echo time.sleep(2) >> test_desktop.py
-        echo print("Pressing Windows+D") >> test_desktop.py
-        echo pyautogui.hotkey("win", "d") >> test_desktop.py
-        echo time.sleep(2) >> test_desktop.py
-        echo print("Pressing Windows key") >> test_desktop.py
-        echo pyautogui.press("win") >> test_desktop.py
-        echo time.sleep(2) >> test_desktop.py
-        echo print("Taking screenshot") >> test_desktop.py
-        echo screenshot = pyautogui.screenshot() >> test_desktop.py
-        echo screenshot.save("test_screenshot.png") >> test_desktop.py
-        echo print("Screenshot saved") >> test_desktop.py
-        echo print("Test completed") >> test_desktop.py
+        echo import os > desktop_check.py
+        echo import time >> desktop_check.py
+        echo import pyautogui >> desktop_check.py
+        echo. >> desktop_check.py
+        echo print('Starting desktop verification...') >> desktop_check.py
+        echo time.sleep(2) >> desktop_check.py
+        echo print('Showing desktop with Windows+D...') >> desktop_check.py
+        echo pyautogui.hotkey('win', 'd') >> desktop_check.py
+        echo time.sleep(3) >> desktop_check.py
+        echo print('Taking screenshot...') >> desktop_check.py
+        echo screenshot = pyautogui.screenshot() >> desktop_check.py
+        echo screenshot.save('desktop_screenshot.png') >> desktop_check.py
+        echo print('Screenshot saved!') >> desktop_check.py
+        echo print('Desktop verification completed!') >> desktop_check.py
+        echo print('Now running main script...') >> desktop_check.py
         "@
-
-        Write-Host "✅ Desktop test script created"
-
-    - name: Run Desktop Verification Script
-      run: |
-        Write-Host "=== RUNNING DESKTOP VERIFICATION SCRIPT ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        Write-Host "Checking script location..."
-        if (Test-Path "$whatsappDir\test_desktop.py") {
-            Write-Host "✅ Script found - running now..."
-            cd $whatsappDir
-            python test_desktop.py
-            Write-Host "✅ Desktop test completed!"
-        } else {
-            Write-Host "❌ Script not found"
-            Write-Host "Current directory: $(Get-Location)"
-            Write-Host "Files in $whatsappDir :"
-            Get-ChildItem -Path $whatsappDir
-        }
+        Write-Host "✅ Desktop verification script created"
 
     - name: Download Cloudflared
       run: |
@@ -122,15 +102,23 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
         Write-Host "✅ Cloudflared downloaded"
 
-    - name: Start Cloudflare Tunnel
+    - name: Start Cloudflare Tunnel and Run Scripts
       run: |
         Write-Host "=== STARTING CLOUDFLARE TUNNEL ==="
-        Write-Host "🎉 DESKTOP VERIFICATION COMPLETE! 🎉"
+        Write-Host "🎉 ENVIRONMENT READY! 🎉"
         Write-Host ""
         Write-Host "📋 RDP CONNECTION DETAILS:"
         Write-Host "   Username: RDPUser"
         Write-Host "   Password: Jalingo@1"
         Write-Host "   Use the Cloudflared URL below to connect via RDP"
+        Write-Host ""
+        Write-Host "🚀 AUTOMATION STATUS:"
+        Write-Host "   ✅ RDP user created with password"
+        Write-Host "   ✅ WhatsApp directory created at C:\Users\RDPUser\Desktop\whatsapp"
+        Write-Host "   ✅ Repository files downloaded (including script.py)"
+        Write-Host "   ✅ MuMu files downloaded"
+        Write-Host "   ✅ Python dependencies installed"
+        Write-Host "   ✅ Desktop verification script created"
         Write-Host ""
         Write-Host "🌐 CLOUDFLARE TUNNEL STARTING..."
         Write-Host "   Your RDP connection URL will appear below:"
@@ -142,31 +130,26 @@ jobs:
         
         # Wait for tunnel to start
         Start-Sleep -Seconds 10
-
-    - name: Run Main Automation Script
-      run: |
-        Write-Host "=== RUNNING MAIN AUTOMATION SCRIPT ==="
-        $whatsappDir = "C:\Users\Administrator\Desktop\whatsapp"
         
-        if (Test-Path "$whatsappDir\script.py") {
-            Write-Host "✅ Found script.py - executing main automation..."
-            cd $whatsappDir
+        # Run the desktop verification script first
+        Write-Host "=== RUNNING DESKTOP VERIFICATION ==="
+        $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
+        cd $whatsappDir
+        python desktop_check.py
+        
+        # Then run the main script.py from the repository
+        Write-Host "=== RUNNING MAIN SCRIPT.PY ==="
+        if (Test-Path "script.py") {
+            Write-Host "✅ Found script.py - executing..."
             python script.py
         } else {
             Write-Host "❌ script.py not found! Available files:"
-            Get-ChildItem -Path $whatsappDir | Format-Table Name
+            Get-ChildItem | Format-Table Name
         }
         
-        Write-Host "=== MAIN AUTOMATION COMPLETED ==="
-
-    - name: Keep Tunnel Alive
-      run: |
-        Write-Host "=== KEEPING TUNNEL ACTIVE ==="
+        Write-Host "=== AUTOMATION COMPLETED ==="
         Write-Host "Cloudflared tunnel will remain active for 6 hours"
-        Write-Host "You can connect via RDP using:"
-        Write-Host "  Username: RDPUser"
-        Write-Host "  Password: Jalingo@1"
-        Write-Host "  URL: (see Cloudflared output above)"
+        Write-Host "You can connect via RDP using the credentials above"
         Write-Host "Waiting for 6 hours..."
         Start-Sleep -Seconds 21600
 
@@ -175,5 +158,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: whatsapp-automation-results
-        path: C:\Users\Administrator\Desktop\whatsapp\
+        path: C:\Users\RDPUser\Desktop\whatsapp\
         retention-days: 1
