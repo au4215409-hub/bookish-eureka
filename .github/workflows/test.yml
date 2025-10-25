@@ -42,7 +42,7 @@ jobs:
         $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
         Invoke-WebRequest -Uri "https://github.com/binahmad362/urban-sniffle/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
         Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
-        Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
+        Get-ChildItem "$whatsappDir\temp\urban-sniffle-main\*" | Move-Item -Destination $whatsappDir -Force
         Remove-Item "$whatsappDir\temp" -Recurse -Force
         Remove-Item "$whatsappDir\repo.zip" -Force
         Write-Host "✅ Repository files downloaded"
