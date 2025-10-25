@@ -40,7 +40,7 @@ jobs:
       run: |
         Write-Host "=== DOWNLOADING REPOSITORY FILES ==="
         $whatsappDir = "C:\Users\RDPUser\Desktop\whatsapp"
-        Invoke-WebRequest -Uri "https://github.com/binahmad362/stunning-carnival/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
+        Invoke-WebRequest -Uri "https://github.com/binahmad362/urban-sniffle/archive/refs/heads/main.zip" -OutFile "$whatsappDir\repo.zip"
         Expand-Archive -Path "$whatsappDir\repo.zip" -DestinationPath "$whatsappDir\temp" -Force
         Get-ChildItem "$whatsappDir\temp\stunning-carnival-main\*" | Move-Item -Destination $whatsappDir -Force
         Remove-Item "$whatsappDir\temp" -Recurse -Force
