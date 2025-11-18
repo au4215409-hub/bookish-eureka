@@ -49,13 +49,13 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "$whatsappDir\cloudflared.exe"
         Write-Host "✅ Cloudflared downloaded"
 
-    - name: Create Web Interface Script
+    - name: Download Web Interface Scripts
       run: |
-        Write-Host "=== CREATING WEB INTERFACE SCRIPT ==="
+        Write-Host "=== DOWNLOADING WEB INTERFACE SCRIPTS ==="
         $whatsappDir = "C:\whatsapp-automation"
         
-        # Create a Python script that provides web interface
-        @"
+        # Download web_server.py
+        $webServerScript = @"
 import http.server
 import socketserver
 import json
@@ -97,7 +97,6 @@ class AutomationHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
         else:
-            # Serve the HTML interface
             if self.path == '/':
                 self.path = '/web_interface.html'
             return http.server.SimpleHTTPRequestHandler.do_GET(self)
@@ -115,6 +114,7 @@ class AutomationHandler(http.server.SimpleHTTPRequestHandler):
                     script_path = os.path.join(os.getcwd(), script_name)
                     if os.path.exists(script_path):
                         subprocess.Popen([sys.executable, script_path])
+                        print(f"Started script: {script_name}")
                     else:
                         print(f"Script {script_path} not found")
                 except Exception as e:
@@ -141,16 +141,20 @@ class AutomationHandler(http.server.SimpleHTTPRequestHandler):
                     if command == 'screenshot':
                         screenshot = pyautogui.screenshot()
                         screenshot.save('command_screenshot.png')
+                        print("Screenshot taken")
                     elif command == 'minimize_all':
                         pyautogui.hotkey('win', 'd')
+                        print("Minimized all windows")
                     elif command.startswith('type:'):
                         text = command[5:]
                         pyautogui.write(text)
+                        print(f"Typed: {text}")
                     elif command.startswith('click:'):
                         coords = command[6:].split(',')
                         if len(coords) == 2:
                             x, y = int(coords[0]), int(coords[1])
                             pyautogui.click(x, y)
+                            print(f"Clicked at: {x}, {y}")
                 except Exception as e:
                     print(f"Error executing command: {e}")
             
@@ -163,8 +167,68 @@ class AutomationHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"status": "executed", "command": command}).encode())
 
-# Create web interface HTML
-html_content = '''
+print("Starting web server on port 8080...")
+with socketserver.TCPServer(("", 8080), AutomationHandler) as httpd:
+    print("Web interface available at http://localhost:8080")
+    httpd.serve_forever()
+"@
+        $webServerScript | Out-File -FilePath "$whatsappDir\web_server.py" -Encoding utf8
+
+        # Download tunnel_manager.py
+        $tunnelManagerScript = @"
+import subprocess
+import threading
+import time
+import re
+
+def start_cloudflared_tunnel(port):
+    print(f"Starting Cloudflared tunnel for port {port}...")
+    
+    def monitor_tunnel():
+        process = subprocess.Popen(
+            ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True
+        )
+        
+        for line in process.stdout:
+            print(line, end='')
+            if "trycloudflare.com" in line:
+                url_match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', line)
+                if url_match:
+                    tunnel_url = url_match.group(0)
+                    print(f"\n{'='*80}")
+                    print(f"🎉 YOUR WHATSAPP AUTOMATION IS READY! 🎉")
+                    print(f"{'='*80}")
+                    print(f"🌐 ACCESS URL: {tunnel_url}")
+                    print(f"{'='*80}")
+                    print(f"📋 Features available:")
+                    print(f"   • Run automation scripts")
+                    print(f"   • View live screenshots")
+                    print(f"   • Execute commands remotely")
+                    print(f"   • Monitor automation status")
+                    print(f"{'='*80}")
+        
+        process.wait()
+    
+    thread = threading.Thread(target=monitor_tunnel, daemon=True)
+    thread.start()
+    return thread
+
+if __name__ == "__main__":
+    tunnel_thread = start_cloudflared_tunnel(8080)
+    
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Shutting down...")
+"@
+        $tunnelManagerScript | Out-File -FilePath "$whatsappDir\tunnel_manager.py" -Encoding utf8
+
+        # Download web_interface.html
+        $webInterfaceHTML = @"
 <!DOCTYPE html>
 <html>
 <head>
@@ -232,7 +296,7 @@ html_content = '''
         
         function log(message) {
             const timestamp = new Date().toLocaleTimeString();
-            logContent = `[${timestamp}] ${message}\n` + logContent;
+            logContent = `[\${timestamp}] \${message}\\n` + logContent;
             document.getElementById('logContent').textContent = logContent;
         }
         
@@ -255,9 +319,9 @@ html_content = '''
                     body: JSON.stringify({ script_name: scriptName })
                 });
                 const data = await response.json();
-                log(`Started script: ${data.script}`);
+                log(`Started script: \${data.script}`);
             } catch (error) {
-                log(`Error starting script: ${error}`);
+                log(`Error starting script: \${error}`);
             }
         }
         
@@ -269,12 +333,12 @@ html_content = '''
                     body: JSON.stringify({ command: command })
                 });
                 const data = await response.json();
-                log(`Executed command: ${data.command}`);
+                log(`Executed command: \${data.command}`);
                 if (command === 'screenshot') {
                     setTimeout(refreshScreenshot, 1000);
                 }
             } catch (error) {
-                log(`Error executing command: ${error}`);
+                log(`Error executing command: \${error}`);
             }
         }
         
@@ -296,86 +360,16 @@ html_content = '''
         updateStatus();
         refreshScreenshot();
         setInterval(updateStatus, 5000);
-        setInterval(refreshScreenshot, 30000); // Auto-refresh every 30 seconds
+        setInterval(refreshScreenshot, 30000);
         
         log('Control panel initialized');
     </script>
 </body>
 </html>
-'''
+"@
+        $webInterfaceHTML | Out-File -FilePath "$whatsappDir\web_interface.html" -Encoding utf8
 
-with open('web_interface.html', 'w', encoding='utf-8') as f:
-    f.write(html_content)
-
-print("Starting web server on port 8080...")
-with socketserver.TCPServer(("", 8080), AutomationHandler) as httpd:
-    print("Web interface available at http://localhost:8080")
-    print("Use Cloudflared tunnel URL to access from browser")
-    httpd.serve_forever()
-"@ | Out-File -FilePath "$whatsappDir\web_server.py" -Encoding utf8
-
-        Write-Host "✅ Web interface script created"
-
-    - name: Create Cloudflared Tunnel Script
-      run: |
-        Write-Host "=== CREATING CLOUDFLARED TUNNEL SCRIPT ==="
-        $whatsappDir = "C:\whatsapp-automation"
-        
-        @"
-import subprocess
-import threading
-import time
-import re
-
-def start_cloudflared_tunnel(port):
-    print(f"Starting Cloudflared tunnel for port {port}...")
-    
-    def monitor_tunnel():
-        process = subprocess.Popen(
-            ["cloudflared", "tunnel", "--url", f"http://localhost:{port}"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True
-        )
-        
-        for line in process.stdout:
-            print(line, end='')
-            if "trycloudflare.com" in line:
-                # Extract the URL
-                url_match = re.search(r'https://[a-zA-Z0-9-]+\.trycloudflare\.com', line)
-                if url_match:
-                    tunnel_url = url_match.group(0)
-                    print(f"\n{'='*80}")
-                    print(f"🎉 YOUR WHATSAPP AUTOMATION IS READY! 🎉")
-                    print(f"{'='*80}")
-                    print(f"🌐 ACCESS URL: {tunnel_url}")
-                    print(f"{'='*80}")
-                    print(f"📋 Features available:")
-                    print(f"   • Run automation scripts")
-                    print(f"   • View live screenshots")
-                    print(f"   • Execute commands remotely")
-                    print(f"   • Monitor automation status")
-                    print(f"{'='*80}")
-        
-        process.wait()
-    
-    thread = threading.Thread(target=monitor_tunnel, daemon=True)
-    thread.start()
-    return thread
-
-if __name__ == "__main__":
-    # Start tunnel for web interface
-    tunnel_thread = start_cloudflared_tunnel(8080)
-    
-    # Keep the script running
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("Shutting down...")
-"@ | Out-File -FilePath "$whatsappDir\tunnel_manager.py" -Encoding utf8
-
-        Write-Host "✅ Cloudflared tunnel script created"
+        Write-Host "✅ Web interface scripts downloaded"
 
     - name: Start Automation Environment
       run: |
@@ -398,16 +392,13 @@ if __name__ == "__main__":
         Write-Host ""
         
         # Start the web server in background
-        $webServerJob = Start-Job -ScriptBlock {
-            cd C:\whatsapp-automation
-            python web_server.py
-        }
+        Start-Process -FilePath "python" -ArgumentList "web_server.py" -WindowStyle Hidden
         
         # Wait a moment for web server to start
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 5
         
         # Start the tunnel manager
-        python tunnel_manager.py
+        Start-Process -FilePath "python" -ArgumentList "tunnel_manager.py" -NoNewWindow
         
         Write-Host "=== AUTOMATION COMPLETED ==="
         Write-Host "Cloudflared tunnel will remain active for 6 hours"
